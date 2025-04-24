@@ -1,0 +1,464 @@
+---
+title: "Data_Analysis"
+output: html_document
+date: "2025-04-15"
+---
+continual: age, calories, sugar, fat, BMI
+ordinal: BMIcat, FoodSec, HHMembers
+nominal: Gender, Race
+
+under 0.05 is a signifciant number
+```{r}
+projectdatabase$BMIcat <- factor(projectdatabase$BMIcat)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+```
+summary of calories, fat, and sugar intake:
+```{r}
+Diet <- c("Calories", "Fat", "Sugar")
+summary(projectdatabase[Diet])
+```
+
+```{r}
+#What are the means, standard deviations, and counts for total calories, total sugars, and total fat intake?
+projectdatabase%>%
+  drop_na(Calories)%>%
+  summarize(mean(Calories), sd(Calories), count=n())
+projectdatabase%>%
+  drop_na(Sugar)%>%
+  summarize(mean(Sugar), sd(Sugar), count=n())
+projectdatabase%>%
+  drop_na(Fat)%>%
+  summarize(mean(Fat), sd(Fat), count=n())
+
+```
+```{r}
+#Generate the mean, standard deviation, and counts for dietary protein and fat intake by BMIcat
+projectdatabase%>%
+  drop_na(Calories)%>%
+  group_by(BMIcat)%>%
+  summarise(mean(Calories), sd(Calories), count=n())
+projectdatabase%>%
+  drop_na(Fat)%>%
+  group_by(BMIcat)%>%
+  summarise(mean(Fat), sd(Fat), count=n())
+projectdatabase%>%
+  drop_na(Sugar)%>%
+  group_by(BMIcat)%>%
+  summarise(mean(Sugar), sd(Sugar), count=n())
+
+```
+descriptive statistics for BMI and Age
+```{r}
+projectdatabase%>%
+  drop_na(BMI)%>%
+  summarize(mean(BMI), sd(BMI), count=n())
+projectdatabase%>%
+  drop_na(Age)%>%
+  summarize(mean(Age), sd(Age), count=n())
+```
+descriptive statistics for BMIcat, FoodSec, HHMembers, Race, and Gender
+```{r}
+library(questionr)
+freq(projectdatabase$BMIcat, cum = TRUE)
+freq(projectdatabase$FoodSec, cum = TRUE)
+freq(projectdatabase$HHMembers, cum = TRUE)
+freq(projectdatabase$Race, cum = TRUE)
+freq(projectdatabase$Gender, cum = TRUE)
+```
+Bar charts showing categories by percentages for BMIcat, HHMembers, and FoodSec
+```{r}
+#Bar chart showing BMI categories by percentages:
+BMIcat_table <- with(projectdatabase, table(BMIcat))
+prop.table(BMIcat_table)
+prop.table(BMIcat_table)*100
+BMIcat_barchart <- as.data.frame(prop.table(BMIcat_table)*100)
+ggplot(BMIcat_barchart, aes(BMIcat, Freq)) + geom_col()
+```
+```{r}
+#Bar chart showing HHMembers by percentages:
+HHMembers_table <- with(projectdatabase, table(HHMembers))
+prop.table(HHMembers_table)
+prop.table(HHMembers_table)*100
+HHMembers_barchart <- as.data.frame(prop.table(HHMembers_table)*100)
+ggplot(HHMembers_barchart, aes(HHMembers, Freq)) + geom_col()
+```
+```{r}
+#Bar chart showing FoodSec by percentages:
+FoodSec_table <- with(projectdatabase, table(FoodSec))
+prop.table(FoodSec_table)
+prop.table(FoodSec_table)*100
+FoodSec_barchart <- as.data.frame(prop.table(FoodSec_table)*100)
+ggplot(FoodSec_barchart, aes(FoodSec, Freq)) + geom_col()
+```
+```{r}
+#Bar chart showing Race by percentages:
+Race_table <- with(projectdatabase, table(Race))
+prop.table(Race_table)
+prop.table(Race_table)*100
+Race_barchart <- as.data.frame(prop.table(Race_table)*100)
+ggplot(Race_barchart, aes(Race, Freq)) + geom_col()
+```
+```{r}
+#Bar chart showing Gender by percentages:
+Gender_table <- with(projectdatabase, table(Gender))
+prop.table(Gender_table)
+prop.table(Gender_table)*100
+Gender_barchart <- as.data.frame(prop.table(Gender_table)*100)
+ggplot(Gender_barchart, aes(Gender, Freq)) + geom_col()
+
+BMI_gender <- projectdatabase%>%
+  drop_na(BMI)%>%
+  group_by(Gender)%>%
+  summarize(n=n(), mean=mean(BMI), sd=sd(BMI))
+BMI_gender
+
+ggplot(BMI_gender, aes(x=reorder(Gender, mean), y=mean)) + geom_bar(stat = "identity", fill="lightblue") + geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=0.2)
+labs(x="Gender",
+     y="",
+     title = "Mean BMI",
+     subtitle = "with standard deviation")
+```
+Historgram of BMI:
+```{r}
+#a. simple histogram: ggplot(data, aes(x=contvar)) + geom_histogram() + labs(title="", x="", y="")
+#construct a histogram for BMI:
+ggplot(projectdatabase, aes(x=BMI)) + 
+  geom_histogram() + labs(title = "histogram of BMI")
+```
+Histogram of Age:
+```{r}
+#a. simple histogram: ggplot(data, aes(x=contvar)) + geom_histogram() + labs(title="", x="", y="")
+#construct a histogram for Age:
+ggplot(projectdatabase, aes(x=Age)) + 
+  geom_histogram() + labs(title = "histogram of Age")
+```
+Histogram of Sugar:
+```{r}
+ggplot(projectdatabase, aes(x=Sugar)) + 
+  geom_histogram() + labs(title = "histogram of Sugar")
+```
+Histogram of Calories:
+```{r}
+ggplot(projectdatabase, aes(x=Calories)) + 
+  geom_histogram() + labs(title = "histogram of Calories")
+```
+Histogram of Fat:
+```{r}
+ggplot(projectdatabase, aes(x=Fat)) + 
+  geom_histogram() + labs(title = "histogram of Fat")
+```
+
+```{r}
+#mytable <- with(data, table(variable))
+race <- with(projectdatabase, table(Race))
+race
+#turn the above table into propotions with prop.table(mytable)
+prop.table(race)
+#turn the table into percentages using prop.table(mytable)*100
+prop.table(race)*100
+
+gender <- with(projectdatabase, table(Gender))
+gender
+prop.table(gender)
+prop.table(gender)*100
+```
+```{r}
+projectdatabase%>%
+  group_by(Gender)%>%
+  drop_na(BMI)%>%
+  summarise(mean(BMI), sd(BMI), count=n())
+```
+```{r}
+table(projectdatabase$Race, projectdatabase$BMIcat)
+
+ggplot(projectdatabase, aes(x=BMIcat, fill=Race)) + geom_bar(position = "stack") + labs(title = "stacked bar chart", x="BMI Categories by Race", y="counts")
+
+ggplot(projectdatabase, aes(x=BMIcat, fill=Race)) + geom_bar(position = "stack") + facet_wrap(~Race) + labs(title = "stacked bar chart", x="BMI Categories by Race", y="counts") + theme(axis.text.x = element_text(angle=45, hjust=1, size=10))
+
+ggplot(projectdatabase, aes(x=BMIcat, fill=Race)) + geom_bar(position = "stack") + facet_grid(~Race) + labs(title = "stacked bar chart", x="BMI Categories by Race", y="counts") + theme(axis.text.x = element_text(angle=45, hjust=1, size=10))
+
+ggplot(projectdatabase, aes(x=BMIcat, fill=Race)) + geom_bar(position = "dodge") + labs(title="grouped bar chart", x="BMI categories by race", y="counts")
+
+```
+```{r}
+#install.packages("questionr")
+library(questionr)
+#use the following code to generate a frequency table for each ordinal variable.
+#freq(data$variable, cum = TRUE, na.omit(data$variable)) (do not use na.omit for BMIcat)
+freq(projectdatabase$Age, cum = TRUE, na.omit(projectdatabase$Age))
+```
+```{r}
+#Calories frequency table
+freq(projectdatabase$Calories, cum = TRUE, na.omit(projectdatabase$Calories))
+```
+```{r}
+#Sugar frequency table
+freq(projectdatabase$Sugar, cum = TRUE, na.omit(projectdatabase$Sugar))
+```
+```{r}
+#Fat frequency table
+freq(projectdatabase$Fat, cum = TRUE, na.omit(projectdatabase$Fat))
+```
+```{r}
+#BMI cat frequency table
+freq(projectdatabase$BMIcat, cum = TRUE)
+```
+```{r}
+ggplot(projectdatabase, aes(x=BMIcat, fill=Gender)) + geom_bar(position = "dodge") + labs(title="grouped bar chart", x="BMI categories by gender", y="counts")
+```
+Correlation test: 
+```{r}
+projectdatabase %>%
+  ggplot(., aes(x=BMI, y=Sugar)) + geom_point(color="violet") + geom_smooth(method=lm, color="purple") + labs(x="BMI", y="Daily Sugar Intake") + theme_bw()
+#correlation test code: cor.test(data$DepVar, data$IndVar, method="pearson")
+cor.test(projectdatabase$BMI, projectdatabase$Sugar, method="pearson")
+```
+Linear regression model 1: scatter plot
+```{r}
+#model_name <- lm(DepVar~IndVar, data=)
+#summary(model_name)
+
+BMI_Sugar <- lm(BMI~Sugar, projectdatabase)
+summary(BMI_Sugar)
+```
+```{r}
+#scatter plot code: #ggplot(aes(x=DepVar, y=IndVar), data=) + geom_point(color="") + geom_smooth(method=lm, color="") + labs(x="", y="") + theme_bw()
+ggplot(aes(x=BMI, y=Sugar), data=projectdatabase) + geom_point(color="magenta") + geom_smooth(method=lm, color="blueviolet") + labs(x="BMI", y="Sugar") + theme_bw()
+#correlation test code: cor.test(data$DepVar, data$IndVar, method="pearson")
+cor.test(projectdatabase$BMI, projectdatabase$Sugar, method="pearson")
+```
+
+Linear regression model 2: 
+```{r}
+#model_name <- lm(DepVar~IndVar, data=)
+#summary(model_name)
+
+BMI_Calories <- lm(BMI~Calories, projectdatabase)
+summary(BMI_Calories)
+```
+```{r}
+#scatter plot code: #ggplot(aes(x=DepVar, y=IndVar), data=) + geom_point(color="") + geom_smooth(method=lm, color="") + labs(x="", y="") + theme_bw()
+ggplot(aes(x=BMI, y=Calories), data=projectdatabase) + geom_point(color="lightgreen") + geom_smooth(method=lm, color="darkgreen") + labs(x="BMI", y="Calories") + theme_bw()
+#correlation test code: cor.test(data$DepVar, data$IndVar, method="pearson")
+cor.test(projectdatabase$BMI, projectdatabase$Calories, method="pearson")
+```
+Linear regression model 3: 
+```{r}
+#model_name <- lm(DepVar~IndVar, data=)
+#summary(model_name)
+
+BMI_Fat <- lm(BMI~Fat, projectdatabase)
+summary(BMI_Fat)
+```
+```{r}
+#scatter plot code: #ggplot(aes(x=DepVar, y=IndVar), data=) + geom_point(color="") + geom_smooth(method=lm, color="") + labs(x="", y="") + theme_bw()
+ggplot(aes(x=BMI, y=Fat), data=projectdatabase) + geom_point(color="dodgerblue3") + geom_smooth(method=lm, color="navy") + labs(x="BMI", y="Fat") + theme_bw()
+#correlation test code: cor.test(data$DepVar, data$IndVar, method="pearson")
+cor.test(projectdatabase$BMI, projectdatabase$Fat, method="pearson")
+```
+
+Correlation test:
+```{r}
+projectdatabase %>%
+  ggplot(., aes(x=BMI, y=Calories)) + geom_point(color="lightgreen") + geom_smooth(method=lm, color="darkgreen") + labs(x="BMI", y="Daily Caloric Intake") + theme_bw()
+#correlation test code: cor.test(data$DepVar, data$IndVar, method="pearson")
+cor.test(projectdatabase$BMI, projectdatabase$Calories, method="pearson")
+```
+
+```{r}
+BMI_Calories <- lm(BMI~Calories, projectdatabase)
+summary(BMI_Calories)
+```
+Correlation test:
+```{r}
+projectdatabase %>%
+  ggplot(., aes(x=BMI, y=Fat)) + geom_point(color="lightblue") + geom_smooth(method=lm, color="navyblue") + labs(x="BMI", y="Daily Fat Intake") + theme_bw()
+#correlation test code: cor.test(data$DepVar, data$IndVar, method="pearson")
+cor.test(projectdatabase$BMI, projectdatabase$Fat, method="pearson")
+```
+
+```{r}
+BMI_Fat <- lm(BMI~Fat, projectdatabase)
+summary(BMI_Fat)
+```
+
+Chi-Square test:bar graph
+```{r}
+#a. Generate a two-way frequency table of BMIcat and HHMembers:
+#table_name <- xtabs(~ CatVar1 + CatVar2, data=)
+#print the table
+#show the table in percentages: prop.table(table_name)*100
+BMIcat_HHMembers_table <- xtabs(~BMIcat + HHMembers, data=projectdatabase)
+BMIcat_HHMembers_table
+prop.table(BMIcat_HHMembers_table)*100
+
+chisq.test(BMIcat_HHMembers_table)
+
+```
+bar graph for Chi-square test
+```{r}
+ggplot(projectdatabase, aes(x=BMIcat, fill=HHMembers)) + geom_bar(position = "dodge") + labs(title="grouped bar chart", x="BMI categories by HHMembers", y="counts")
+```
+
+T-Test: bar graph, box plot
+```{r}
+#2 descriptive statistics of sedentary grouped by health insurance
+projectdatabase%>%
+  drop_na(Calories)%>%
+  group_by(Gender)%>%
+  summarize(mean(Calories), sd(Calories), count=n())
+#3 test to see if the variance of the continuous variable are equal across different levels of the categorical variable: var.test(contvar~catvar, data=, )
+var.test(Calories~Gender, data=projectdatabase, alternative="two.sided")
+#4 t-test: t.test(contvar~catvar, var.equal=FALSE, data=, na.rm=TRUE)
+t.test(Calories~Gender, var.equal=FALSE, data=projectdatabase, na.rm=TRUE)
+```
+the above T-test does not indicate a significant P-value. 
+
+graph for t-test 1:(gender and Calories)
+```{r}
+ggplot(projectdatabase, aes(x=Gender, fill=Calories)) + geom_bar(position = "dodge") + labs(title="grouped bar chart", x="Gender by Calories", y="counts")+ geom_bar(color = "lightgreen", fill="darkgreen")
+```
+T-test again:
+```{r}
+#2 descriptive statistics of sedentary grouped by health insurance
+projectdatabase%>%
+  drop_na(Sugar)%>%
+  group_by(Gender)%>%
+  summarize(mean(Sugar), sd(Sugar), count=n())
+#3 test to see if the variance of the continuous variable are equal across different levels of the categorical variable: var.test(contvar~catvar, data=, )
+var.test(Sugar~Gender, data=projectdatabase, alternative="two.sided")
+#4 t-test: t.test(contvar~catvar, var.equal=FALSE, data=, na.rm=TRUE)
+t.test(Sugar~Gender, var.equal=FALSE, data=projectdatabase, na.rm=TRUE)
+```
+the above T-test does not indicate a significant P-value. 
+
+graph for the second t-test: (gender and sugar)
+```{r}
+ggplot(projectdatabase, aes(x=Gender, fill=Sugar)) + geom_bar(position = "dodge") + labs(title="grouped bar chart", x="Gender by Sugar", y="counts")+ geom_bar(color = "purple", fill="violet")
+```
+t-test again:
+```{r}
+#2 descriptive statistics of sedentary grouped by health insurance
+projectdatabase%>%
+  drop_na(Fat)%>%
+  group_by(Gender)%>%
+  summarize(mean(Fat), sd(Fat), count=n())
+#3 test to see if the variance of the continuous variable are equal across different levels of the categorical variable: var.test(contvar~catvar, data=, )
+var.test(Fat~Gender, data=projectdatabase, alternative="two.sided")
+#4 t-test: t.test(contvar~catvar, var.equal=FALSE, data=, na.rm=TRUE)
+t.test(Fat~Gender, var.equal=FALSE, data=projectdatabase, na.rm=TRUE)
+```
+the above T-test does not indicate a significant P-value. 
+
+graph for the third t-test: (gender and fat)
+```{r}
+ggplot(projectdatabase, aes(x=Gender, fill=Fat)) + geom_bar(position = "dodge") + labs(title="grouped bar chart", x="Gender by Fat", y="counts") + geom_bar(color = "blue", fill="navy")
+
+
+```
+
+ANOVA test:
+```{r}
+#1. find summary statistics of sample sizes, means, standard deviations, and 95% confidence intervals
+#age is the dependent variable and BMIcat is the independent variable. the higher the F falue the more significant ANOVA is. 
+plotdata<- projectdatabase%>%
+  drop_na(Calories)%>%
+  group_by(BMIcat)%>%
+  summarize (n=n(),
+             mean = mean(Calories),
+             sd=sd(Calories),
+             ci=qt(0.975, df=n-1)*sd/sqrt(n))
+plotdata
+#2. test for group differences (ANOVA)
+fit <- aov(Calories~BMIcat, data=projectdatabase)
+summary(fit)
+#3. Plot group means and confidence intervals to visualize these group differences.
+library(ggplot2)
+ggplot(plotdata, aes(x=BMIcat, y=mean, group = 1)) +
+  geom_point(size=2, color="darkgreen") +
+             geom_errorbar(aes(ymin=mean-ci,
+                               ymax=mean+ci),
+                           width=.1) +
+               theme_bw() +
+               labs(x="BMI category",
+                    y="Calories",
+                    title = "BMI category and Caloric intake with 95% CI")
+```
+ANOVA again:
+```{r}
+#1. find summary statistics of sample sizes, means, standard deviations, and 95% confidence intervals
+#age is the dependent variable and BMIcat is the independent variable. the higher the F falue the more significant ANOVA is. 
+plotdata2<- projectdatabase%>%
+  drop_na(Fat)%>%
+  group_by(BMIcat)%>%
+  summarize (n=n(),
+             mean = mean(Fat),
+             sd=sd(Fat),
+             ci=qt(0.975, df=n-1)*sd/sqrt(n))
+plotdata2
+#2. test for group differences (ANOVA)
+fit <- aov(Fat~BMIcat, data=projectdatabase)
+summary(fit)
+#3. Plot group means and confidence intervals to visualize these group differences.
+library(ggplot2)
+ggplot(plotdata2, aes(x=BMIcat, y=mean, group = 1)) +
+  geom_point(size=2, color="navyblue") +
+             geom_errorbar(aes(ymin=mean-ci,
+                               ymax=mean+ci),
+                           width=.1) +
+               theme_bw() +
+               labs(x="BMI category",
+                    y="Fat",
+                    title = "BMI category and Fat intake with 95% CI")
+```
+ANOVA again:
+```{r}
+#1. find summary statistics of sample sizes, means, standard deviations, and 95% confidence intervals
+#age is the dependent variable and BMIcat is the independent variable. the higher the F falue the more significant ANOVA is. 
+plotdata3<- projectdatabase%>%
+  drop_na(Sugar)%>%
+  group_by(BMIcat)%>%
+  summarize (n=n(),
+             mean = mean(Sugar),
+             sd=sd(Sugar),
+             ci=qt(0.975, df=n-1)*sd/sqrt(n))
+plotdata3
+#2. test for group differences (ANOVA)
+fit <- aov(Sugar~BMIcat, data=projectdatabase)
+summary(fit)
+#3. Plot group means and confidence intervals to visualize these group differences.
+library(ggplot2)
+ggplot(plotdata3, aes(x=BMIcat, y=mean, group = 1)) +
+  geom_point(size=2, color="violet") +
+             geom_errorbar(aes(ymin=mean-ci,
+                               ymax=mean+ci),
+                           width=.1) +
+               theme_bw() +
+               labs(x="BMI category",
+                    y="Sugar",
+                    title = "BMI category and Sugar intake with 95% CI")
+```
+
+odds ratio:
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+install.packages("epitools")
+library(epitools)
+install.packages("ggmosaic")
+library(ggmosaic)
+```
+odds ratio:
+```{r}
+BMIcat_Gender_odds_table <- table(projectdatabase$BMIcat, projectdatabase$Gender)
+
+oddsratio(BMIcat_Gender_odds_table)
+
+ggplot(projectdatabase) + geom_mosaic(aes(x=product(BMIcat), fill=Gender), na.rm=TRUE, show.legend=FALSE) + labs(title="Gender by BMIcat", x="BMIcat", y="Gender")
+```
+the above odds ratio is not significant. 
